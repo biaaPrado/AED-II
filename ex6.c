@@ -5,27 +5,30 @@ typedef struct No{
     int valor;
     struct No *ant;
     struct No *prox;
-}No;
+} No;
 
 typedef struct{
     No *head;
     No *tail;
-}Lista;
+} Lista;
 
 int hash(int k, int m){
     return k % m;
 }
 
-No * novoNo(int valor){
-    No *n = (No*)malloc(sizeof(No));
+No *novoNo(int valor){
+    No *n = (No*) malloc(sizeof(No));
     n->valor = valor;
     n->ant = NULL;
     n->prox = NULL;
+
     return n;
 }
 
 void insereOrdenado(Lista *l, int valor){
     No *novo = novoNo(valor);
+
+    // lista vazia
     if(l->head == NULL){
         l->head = l->tail = novo;
         return;
@@ -35,19 +38,23 @@ void insereOrdenado(Lista *l, int valor){
     while(atual != NULL && atual->valor < valor){
         atual = atual->prox;
     }
+    // inserir no fim
     if(atual == NULL){
         novo->ant = l->tail;
         l->tail->prox = novo;
         l->tail = novo;
-        return;
 
-    } else if(atual == l->head){
+        return;
+    }
+    // inserir no início
+    if(atual == l->head){
         novo->prox = l->head;
         l->head->ant = novo;
         l->head = novo;
-        return;
 
+        return;
     }
+    // inserir no meio
     novo->prox = atual;
     novo->ant = atual->ant;
 
@@ -58,65 +65,92 @@ void insereOrdenado(Lista *l, int valor){
 int buscaRemove(Lista *l, int chave, char sentido[], int *achou){
     int NEP = 0;
     *achou = 0;
-
-    if(l->head == NULL) return 0; // lista vazia
+    // lista vazia
+    if(l->head == NULL)
+        return 0;
 
     int deltaHead = abs(chave - l->head->valor);
     int deltaTail = abs(l->tail->valor - chave);
 
-    if (deltaHead <= deltaTail){ //busca pelo inicio
+    // busca pelo início
+    if(deltaHead <= deltaTail){
         sprintf(sentido, "Inicio");
+
         No *atual = l->head;
         while(atual != NULL){
             NEP++;
+            // corte lógico
             if(atual->valor > chave)
                 break;
 
             No *prox = atual->prox;
             if(atual->valor == chave){
                 *achou = 1;
-
-                if(atual == l->head){ //remove
+                // remove head
+                if(atual == l->head){
                     l->head = atual->prox;
+                    if(l->head)
+                        l->head->ant = NULL;
                 }
+
+                // remove tail
                 if(atual == l->tail){
                     l->tail = atual->ant;
+                    if(l->tail)
+                        l->tail->prox = NULL;
                 }
+
+                // remove meio
                 if(atual->ant)
                     atual->ant->prox = atual->prox;
-                if(atual->prox)                   
+
+                if(atual->prox)
                     atual->prox->ant = atual->ant;
+
                 free(atual);
             }
             atual = prox;
         }
     }
+    // busca pelo fim
     else{
         sprintf(sentido, "Fim");
+
         No *atual = l->tail;
         while(atual != NULL){
             NEP++;
+            // corte lógico
             if(atual->valor < chave)
                 break;
 
             No *ant = atual->ant;
             if(atual->valor == chave){
-
-                if(atual == l->head){ //remove
+                *achou = 1;
+                // remove head
+                if(atual == l->head){
                     l->head = atual->prox;
+                    if(l->head)
+                        l->head->ant = NULL;
                 }
+                // remove tail
                 if(atual == l->tail){
                     l->tail = atual->ant;
+                    if(l->tail)
+                        l->tail->prox = NULL;
                 }
+                // remove meio
                 if(atual->ant)
                     atual->ant->prox = atual->prox;
-                if(atual->prox)                   
+
+                if(atual->prox)
                     atual->prox->ant = atual->ant;
+
                 free(atual);
             }
             atual = ant;
         }
     }
+
     return NEP;
 }
 
@@ -129,6 +163,7 @@ void imprimeLista(Lista *l, int indice){
     }
 
     No *atual = l->head;
+
     while(atual != NULL){
         printf("%d -> ", atual->valor);
         atual = atual->prox;
@@ -140,24 +175,29 @@ void imprimeLista(Lista *l, int indice){
         printf("%d -> ", atual->valor);
         atual = atual->ant;
     }
+
     printf("NULL\n");
 }
 
 int main(){
-    int m, i, x;
+    int m;
     scanf("%d", &m);
 
-    Lista *tabela = (Lista*)malloc(m * sizeof(Lista));
+    Lista *tabela = (Lista*) malloc(m * sizeof(Lista));
 
-    for(i = 0; i < m; i++){
+    for(int i = 0; i < m; i++){
         tabela[i].head = NULL;
         tabela[i].tail = NULL;
     }
+
+    int x;
+    // inserções
     while(scanf("%d", &x) && x != -1){
         int indice = hash(x, m);
         insereOrdenado(&tabela[indice], x);
     }
 
+    // busca
     int chave;
     scanf("%d", &chave);
 
@@ -172,11 +212,15 @@ int main(){
     else{
         printf("NEP: %d (Sentido: %s)\n", NEP, sentido);
     }
+
     if(!achou){
-        printf("Valor nao encontrado\n", chave);
+        printf("Valor nao encontrado\n");
     }
-    for (i = 0; i < m; i++){
+
+    // imprime tabela
+    for(int i = 0; i < m; i++){
         imprimeLista(&tabela[i], i);
     }
+
     return 0;
 }
